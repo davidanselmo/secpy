@@ -1,0 +1,36 @@
+import os
+import shutil
+import subprocess
+
+# define some constants
+gf_install_path = "/usr/local/bin/gf"
+gf_download_url = "https://github.com/tomnomnom/gf"
+go_get_cmd = "go get -u github.com/tomnomnom/gf"
+
+# check if GF is already installed
+if os.path.exists(gf_install_path):
+    print("GF is already installed.")
+    print("Uninstalling GF...")
+    os.remove(gf_install_path)
+    shutil.rmtree(os.path.expanduser("~/.gf"))
+
+# download and install GF
+try:
+    print("Installing GF...")
+    subprocess.run(["go", "install", "github.com/tomnomnom/gf@latest"], check=True)
+    subprocess.run(["ln", "-s", os.path.expanduser("~/go/bin/gf"), gf_install_path], check=True)
+    print("GF installed successfully.")
+except subprocess.CalledProcessError:
+    print("Could not install GF with 'go get'. Trying another way...")
+    subprocess.run(["rm", "-f", "/tmp/gf.tar.gz"])
+    subprocess.run(["wget", "-O", "/tmp/gf.tar.gz", gf_download_url], check=True)
+    subprocess.run(["tar", "-C", "/tmp", "-xzf", "/tmp/gf.tar.gz"], check=True)
+    subprocess.run(["mv", "/tmp/gf", gf_install_path], check=True)
+    print("GF installed successfully.")
+
+# check if GF is installed correctly
+try:
+    subprocess.run([gf_install_path, "version"], check=True)
+    print("GF is working correctly.")
+except subprocess.CalledProcessError:
+    print("GF is not working correctly.")
